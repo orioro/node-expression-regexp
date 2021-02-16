@@ -17,6 +17,7 @@ project.
 - [`$stringMatch(regexp, value)`](#stringmatchregexp-value)
 - [`$stringTest(regexp, value)`](#stringtestregexp-value)
 - [`$stringReplace(searchExp, replacementExp)`](#stringreplacesearchexp-replacementexp)
+- [`$stringSplit(regexp, value)`](#stringsplitregexp-value)
 
 ##### `$stringMatch(regexp, value)`
 
@@ -34,4 +35,10 @@ project.
 
 - `searchExp` {String | [String, String?]}
 - `replacementExp` {String}
-- Returns: {String}
+- Returns: {String} 
+
+##### `$stringSplit(regexp, value)`
+
+- `regexp` {String | [String, String?]}
+- `value` {String}
+- Returns: {String[]}

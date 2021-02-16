@@ -5,7 +5,7 @@ import RE2 from 're2'
 import { getType } from '@orioro/validate-type'
 
 import { RegExpCandidate } from './types'
-import { _stringMatch, _stringTest, _stringReplace } from './expressions'
+import { prepareExpressions } from './expressions'
 
 const prepareRegExp = (regexpCandidate: RegExpCandidate): RE2 => {
   switch (getType(regexpCandidate)) {
@@ -20,12 +20,11 @@ const prepareRegExp = (regexpCandidate: RegExpCandidate): RE2 => {
   }
 }
 
-export const $stringMatch = _stringMatch(prepareRegExp)
-export const $stringTest = _stringTest(prepareRegExp)
-export const $stringReplace = _stringReplace(prepareRegExp)
+export const REGEXP_EXPRESSIONS = prepareExpressions(prepareRegExp)
 
-export const REGEXP_EXPRESSIONS = {
+export const {
   $stringMatch,
   $stringTest,
   $stringReplace,
-}
+  $stringSplit,
+} = REGEXP_EXPRESSIONS

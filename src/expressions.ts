@@ -4,6 +4,7 @@ import {
   Expression,
   EvaluationContext,
   ExpressionInterpreter,
+  ExpressionInterpreterList,
 } from '@orioro/expression'
 import { RegExpCandidate } from './types'
 
@@ -73,3 +74,27 @@ export const _stringReplace = (
       ),
     [['string', 'regexp', 'array'], null, 'string']
   )
+
+/**
+ * @function $stringSplit
+ * @param {String | [String, String?]} regexp
+ * @param {String} [value=$$VALUE]
+ * @returns {String[]}
+ */
+export const _stringSplit = (
+  prepareRegExp: PrepareRegExpInterface
+): ExpressionInterpreter =>
+  interpreter(
+    (regexpCandidate: RegExpCandidate, value: string): string[] =>
+      value.split(prepareRegExp(regexpCandidate)),
+    [['string', 'regexp', 'array'], 'string']
+  )
+
+export const prepareExpressions = (
+  prepareRegExp: PrepareRegExpInterface
+): ExpressionInterpreterList => ({
+  $stringMatch: _stringMatch(prepareRegExp),
+  $stringTest: _stringTest(prepareRegExp),
+  $stringReplace: _stringReplace(prepareRegExp),
+  $stringSplit: _stringSplit(prepareRegExp),
+})

@@ -73,6 +73,39 @@ const COMMON_API = {
       ).toEqual('ABC_AdC_ACdC')
     },
   },
+  $stringSplit: {
+    'split on simple string': (interpreters) => () => {
+      const context = {
+        interpreters,
+        scope: { $$VALUE: 'Maçãs, laranjas, uvas e melões' },
+      }
+
+      expect(evaluate(context, ['$stringSplit', ' '])).toEqual([
+        'Maçãs,',
+        'laranjas,',
+        'uvas',
+        'e',
+        'melões',
+      ])
+
+      expect(evaluate(context, ['$stringSplit', '_'])).toEqual([
+        context.scope.$$VALUE,
+      ])
+    },
+    'split on regexp': (interpreters) => () => {
+      const context = {
+        interpreters,
+        scope: { $$VALUE: 'Maçãs, laranjas, uvas e melões' },
+      }
+
+      expect(evaluate(context, ['$stringSplit', '\\s*[,e]\\s+'])).toEqual([
+        'Maçãs',
+        'laranjas',
+        'uvas',
+        'melões',
+      ])
+    },
+  },
 }
 
 const suiteCatastrophicBacktracking = (interpreters) => {
@@ -115,6 +148,19 @@ const suiteCatastrophicBacktracking = (interpreters) => {
           '<<< REPLACEMENT >>>',
         ])
       ).toEqual(context.scope.$$VALUE) // no change
+      const end = Date.now()
+
+      // Takes over 30s on RegExp-based implementation
+      // console.log(`took ${(end - start) / 1000} seconds`)
+
+      expect(end - start).toBeLessThan(50)
+    })
+
+    test('$stringSplit', () => {
+      const start = Date.now()
+      expect(evaluate(context, ['$stringSplit', '^(\\d+)*$'])).toEqual([
+        context.scope.$$VALUE,
+      ]) // no change
       const end = Date.now()
 
       // Takes over 30s on RegExp-based implementation
