@@ -1,7 +1,14 @@
 {
   "name": "@orioro/expression-regexp",
   "version": "0.0.0-semantic-release",
-  "description": "",
+  "description": "Set of expressions to use regular expressions with @orioro/expression",
+  "keywords": ["regexp", "expression"],
+  "homepage": "https://github.com/orioro/node-expression-regexp",
+  "bugs": "https://github.com/orioro/node-expression-regexp/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/orioro/node-expression-regexp.git"
+  },
   "main": "dist/index.node.js",
   "module": "dist/index.node.mjs",
   "browser": "dist/index.browser.js",
@@ -23,6 +30,9 @@
   },
   "author": "",
   "license": "ISC",
+  "files": [
+    "dist/**/*"
+  ],
   "publishConfig": {
     "access": "public"
   },
