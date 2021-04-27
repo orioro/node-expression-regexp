@@ -2,7 +2,10 @@
   "name": "@orioro/expression-regexp",
   "version": "0.0.0-semantic-release",
   "description": "Set of expressions to use regular expressions with @orioro/expression",
-  "keywords": ["regexp", "expression"],
+  "keywords": [
+    "regexp",
+    "expression"
+  ],
   "homepage": "https://github.com/orioro/node-expression-regexp",
   "bugs": "https://github.com/orioro/node-expression-regexp/issues",
   "repository": {
@@ -40,6 +43,7 @@
     "@babel/core": "^7.12.16",
     "@babel/preset-env": "^7.12.16",
     "@babel/preset-typescript": "^7.12.16",
+    "@orioro/jest-util-expression": "^1.0.3",
     "@orioro/readme": "^1.0.1",
     "@rollup/plugin-babel": "^5.3.0",
     "@rollup/plugin-commonjs": "^17.1.0",
@@ -74,8 +78,8 @@
     ]
   },
   "dependencies": {
-    "@orioro/expression": "^2.7.2",
-    "@orioro/validate-type": "^1.1.0",
+    "@orioro/expression": "^6.4.1",
+    "@orioro/typing": "^4.4.0",
     "re2": "^1.15.9"
   }
 }

@@ -1,4 +1,5 @@
 import {
+  interpreterList,
   evaluate,
   STRING_EXPRESSIONS,
   VALUE_EXPRESSIONS,
@@ -6,109 +7,135 @@ import {
 import { REGEXP_EXPRESSIONS as BROWSER_REGEXP_EXPRESSIONS } from './index.browser'
 import { REGEXP_EXPRESSIONS as NODE_REGEXP_EXPRESSIONS } from './index.node'
 
+import { prepareEvaluateTestCases } from '@orioro/jest-util-expression'
+
 const COMMON_API = {
   $stringMatch: {
-    'array notation - using regexp flags': (interpreters) => () => {
-      const context = {
-        interpreters,
-        scope: { $$VALUE: 'abc_adc_acdc' },
-      }
+    'array notation - using regexp flags': ({ testAllCases }) => () => {
+      const value = 'abc_adc_acdc'
 
-      expect(evaluate(context, ['$stringMatch', ['a.*?c', 'g']])).toEqual([
-        'abc',
-        'adc',
-        'ac',
+      testAllCases([
+        [value, ['$stringMatch', ['a.*?c', 'g']], ['abc', 'adc', 'ac']],
+        [value, ['$stringMatch', 'u'], []],
       ])
-
-      expect(evaluate(context, ['$stringMatch', 'u'])).toEqual([])
     },
   },
   $stringTest: {
-    basic: (interpreters) => () => {
-      const context = {
-        interpreters,
-        scope: { $$VALUE: 'abc_adc_acdc' },
-      }
+    basic: ({ testAllCases }) => () => {
+      const value = 'abc_adc_acdc'
 
-      expect(evaluate(context, ['$stringTest', ['a.*?c', 'g']])).toEqual(true)
-
-      expect(evaluate(context, ['$stringTest', 'u'])).toEqual(false)
+      testAllCases([
+        [value, ['$stringTest', ['a.*?c', 'g']], true],
+        [value, ['$stringTest', 'u'], false],
+      ])
     },
   },
   $stringReplace: {
-    'string search - replaces only first match': (interpreters) => () => {
-      const context = {
-        interpreters,
-        scope: { $$VALUE: 'abc_adc_acdc' },
-      }
+    'string search - replaces only first match': ({ testAllCases }) => () => {
+      const value = 'abc_adc_acdc'
 
-      expect(
-        evaluate(context, ['$stringReplace', 'a', '--REPLACEMENT--'])
-      ).toEqual('--REPLACEMENT--bc_adc_acdc')
+      testAllCases([
+        [
+          value,
+          ['$stringReplace', 'a', '--REPLACEMENT--'],
+          '--REPLACEMENT--bc_adc_acdc',
+        ],
+      ])
     },
 
-    'regexp search - using global (g) flag': (interpreters) => () => {
-      const context = {
-        interpreters,
-        scope: { $$VALUE: 'abc_adc_acdc' },
-      }
+    'regexp search - using global (g) flag': ({ testAllCases }) => () => {
+      const value = 'abc_adc_acdc'
 
-      expect(
-        evaluate(context, ['$stringReplace', ['a', 'g'], '--REPLACEMENT--'])
-      ).toEqual('--REPLACEMENT--bc_--REPLACEMENT--dc_--REPLACEMENT--cdc')
+      testAllCases([
+        [
+          value,
+          ['$stringReplace', ['a', 'g'], '--REPLACEMENT--'],
+          '--REPLACEMENT--bc_--REPLACEMENT--dc_--REPLACEMENT--cdc',
+        ],
+      ])
     },
 
-    'regexp search - using replacement expression': (interpreters) => () => {
-      const context = {
-        interpreters,
-        scope: { $$VALUE: 'abc_adc_acdc' },
-      }
+    'regexp search - using replacement expression': ({
+      testAllCases,
+    }) => () => {
+      const value = 'abc_adc_acdc'
 
-      expect(
-        evaluate(context, [
-          '$stringReplace',
-          ['[a-c]', 'g'],
-          ['$stringToUpperCase'],
-        ])
-      ).toEqual('ABC_AdC_ACdC')
+      testAllCases([
+        [
+          value,
+          ['$stringReplace', ['[a-c]', 'g'], ['$stringToUpperCase']],
+          'ABC_AdC_ACdC',
+        ],
+      ])
     },
   },
   $stringSplit: {
-    'split on simple string': (interpreters) => () => {
-      const context = {
-        interpreters,
-        scope: { $$VALUE: 'Maçãs, laranjas, uvas e melões' },
-      }
+    'split on simple string': ({ testAllCases }) => () => {
+      const value = 'Maçãs, laranjas, uvas e melões'
 
-      expect(evaluate(context, ['$stringSplit', ' '])).toEqual([
-        'Maçãs,',
-        'laranjas,',
-        'uvas',
-        'e',
-        'melões',
-      ])
-
-      expect(evaluate(context, ['$stringSplit', '_'])).toEqual([
-        context.scope.$$VALUE,
+      testAllCases([
+        [
+          value,
+          ['$stringSplit', ' '],
+          ['Maçãs,', 'laranjas,', 'uvas', 'e', 'melões'],
+        ],
+        [value, ['$stringSplit', '_'], [value]], // no change
       ])
     },
-    'split on regexp': (interpreters) => () => {
-      const context = {
-        interpreters,
-        scope: { $$VALUE: 'Maçãs, laranjas, uvas e melões' },
-      }
+    'split on regexp': ({ testAllCases }) => () => {
+      const value = 'Maçãs, laranjas, uvas e melões'
 
-      expect(evaluate(context, ['$stringSplit', '\\s*[,e]\\s+'])).toEqual([
-        'Maçãs',
-        'laranjas',
-        'uvas',
-        'melões',
+      testAllCases([
+        [
+          value,
+          ['$stringSplit', '\\s*[,e]\\s+'],
+          ['Maçãs', 'laranjas', 'uvas', 'melões'],
+        ],
+      ])
+    },
+  },
+
+  'regexp formats': {
+    string: ({ testAllCases }) => () => {
+      const value = 'abc_adc_acdc'
+
+      testAllCases([
+        [value, ['$stringTest', 'a'], true],
+        [value, ['$stringTest', 'A'], false],
+      ])
+    },
+    array: ({ testAllCases }) => () => {
+      const value = 'abc_adc_acdc'
+
+      testAllCases([
+        [value, ['$stringTest', ['a']], true],
+        [value, ['$stringTest', ['A']], false],
+        [value, ['$stringTest', ['A', 'i']], true],
+      ])
+    },
+    regexp: ({ testAllCases }) => () => {
+      const value = 'abc_adc_acdc'
+
+      testAllCases([
+        [value, ['$stringTest', /a/], true],
+        [value, ['$stringTest', /A/], false],
+        [value, ['$stringTest', /A/i], true],
+      ])
+    },
+    unknown: ({ testAllCases }) => () => {
+      const value = 'abc_adc_acdc_999'
+
+      testAllCases([
+        [value, ['$stringTest', '9'], true],
+        [value, ['$stringTest', 9], TypeError],
+        [value, ['$stringTest', [9]], TypeError],
+        [value, ['$stringTest', ['9', 9]], TypeError],
       ])
     },
   },
 }
 
-const suiteCatastrophicBacktracking = (interpreters) => {
+const suiteCatastrophicBacktracking = ({ interpreters }) => {
   describe('catastrophic backtracking (to be sure no RegExp-based code on node version)', () => {
     // See
     // https://javascript.info/regexp-catastrophic-backtracking#preventing-backtracking
@@ -172,42 +199,46 @@ const suiteCatastrophicBacktracking = (interpreters) => {
 }
 
 describe('browser (based on JS Native RegExp)', () => {
-  const interpreters = {
+  const testAllCases = prepareEvaluateTestCases({
     ...VALUE_EXPRESSIONS,
     ...STRING_EXPRESSIONS,
     ...BROWSER_REGEXP_EXPRESSIONS,
-  }
+  })
 
   Object.keys(COMMON_API).forEach((groupTitle) => {
     // eslint-disable-next-line jest/valid-title
     describe(groupTitle, () => {
       Object.keys(COMMON_API[groupTitle]).forEach((title) => {
-        // eslint-disable-next-line jest/valid-title, jest/expect-expect
-        test(title, COMMON_API[groupTitle][title](interpreters))
+        // eslint-disable-next-line jest/valid-title, jest/valid-describe
+        describe(title, COMMON_API[groupTitle][title]({ testAllCases }))
       })
     })
   })
 
   // To see performance issues related to catastrophic backtracking:
-  // suiteCatastrophicBacktracking(interpreters)
+  // suiteCatastrophicBacktracking({ testAllCases })
 })
 
 describe('node (based on RE2)', () => {
-  const interpreters = {
+  const interpreterSpecs = {
     ...VALUE_EXPRESSIONS,
     ...STRING_EXPRESSIONS,
     ...NODE_REGEXP_EXPRESSIONS,
   }
+  const testAllCases = prepareEvaluateTestCases(interpreterSpecs)
 
   Object.keys(COMMON_API).forEach((groupTitle) => {
     // eslint-disable-next-line jest/valid-title
     describe(groupTitle, () => {
       Object.keys(COMMON_API[groupTitle]).forEach((title) => {
-        // eslint-disable-next-line jest/valid-title, jest/expect-expect
-        test(title, COMMON_API[groupTitle][title](interpreters))
+        // eslint-disable-next-line jest/valid-title, jest/valid-describe
+        describe(title, COMMON_API[groupTitle][title]({ testAllCases }))
       })
     })
   })
 
-  suiteCatastrophicBacktracking(interpreters)
+  suiteCatastrophicBacktracking({
+    testAllCases,
+    interpreters: interpreterList(interpreterSpecs),
+  })
 })

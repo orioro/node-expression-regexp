@@ -1,12 +1,12 @@
 import {
-  interpreter,
-  evaluateTyped,
+  evaluateTypedSync,
   Expression,
   EvaluationContext,
-  ExpressionInterpreter,
-  ExpressionInterpreterList,
+  InterpreterSpec,
+  InterpreterSpecList,
 } from '@orioro/expression'
 import { RegExpCandidate } from './types'
+import { anyType } from '@orioro/typing'
 
 type PrepareRegExpInterface = (regexpCandidate: RegExpCandidate) => RegExp
 
@@ -18,15 +18,14 @@ type PrepareRegExpInterface = (regexpCandidate: RegExpCandidate) => RegExp
  */
 export const _stringMatch = (
   prepareRegExp: PrepareRegExpInterface
-): ExpressionInterpreter =>
-  interpreter(
-    (regexpCandidate: RegExpCandidate, value: string): string[] => {
-      const match = value.match(prepareRegExp(regexpCandidate))
+): InterpreterSpec => [
+  (regexpCandidate: RegExpCandidate, value: string): string[] => {
+    const match = value.match(prepareRegExp(regexpCandidate))
 
-      return match === null ? [] : [...match]
-    },
-    [['string', 'regexp', 'array'], 'string']
-  )
+    return match === null ? [] : [...match]
+  },
+  [['string', 'regexp', 'array'], 'string'],
+]
 
 /**
  * @function $stringTest
@@ -36,12 +35,11 @@ export const _stringMatch = (
  */
 export const _stringTest = (
   prepareRegExp: PrepareRegExpInterface
-): ExpressionInterpreter =>
-  interpreter(
-    (regexpCandidate: RegExpCandidate, value: string): boolean =>
-      prepareRegExp(regexpCandidate).test(value),
-    [['string', 'regexp', 'array'], 'string']
-  )
+): InterpreterSpec => [
+  (regexpCandidate: RegExpCandidate, value: string): boolean =>
+    prepareRegExp(regexpCandidate).test(value),
+  [['string', 'regexp', 'array'], 'string'],
+]
 
 /**
  * @function $stringReplace
@@ -51,29 +49,28 @@ export const _stringTest = (
  */
 export const _stringReplace = (
   prepareRegExp: PrepareRegExpInterface
-): ExpressionInterpreter =>
-  interpreter(
-    (
-      search: RegExpCandidate,
-      replacementExp: Expression,
-      value: string,
-      context: EvaluationContext
-    ): string =>
-      value.replace(prepareRegExp(search), (match) =>
-        evaluateTyped(
-          'string',
-          {
-            ...context,
-            scope: {
-              $$VALUE: match,
-              $$PARENT_SCOPE: context.scope,
-            },
+): InterpreterSpec => [
+  (
+    search: RegExpCandidate,
+    replacementExp: Expression,
+    value: string,
+    context: EvaluationContext
+  ): string =>
+    value.replace(prepareRegExp(search), (match) =>
+      evaluateTypedSync(
+        'string',
+        {
+          ...context,
+          scope: {
+            $$VALUE: match,
+            $$PARENT_SCOPE: context.scope,
           },
-          replacementExp
-        )
-      ),
-    [['string', 'regexp', 'array'], null, 'string']
-  )
+        },
+        replacementExp
+      )
+    ),
+  [['string', 'regexp', 'array'], anyType({ skipEvaluation: true }), 'string'],
+]
 
 /**
  * @function $stringSplit
@@ -83,16 +80,15 @@ export const _stringReplace = (
  */
 export const _stringSplit = (
   prepareRegExp: PrepareRegExpInterface
-): ExpressionInterpreter =>
-  interpreter(
-    (regexpCandidate: RegExpCandidate, value: string): string[] =>
-      value.split(prepareRegExp(regexpCandidate)),
-    [['string', 'regexp', 'array'], 'string']
-  )
+): InterpreterSpec => [
+  (regexpCandidate: RegExpCandidate, value: string): string[] =>
+    value.split(prepareRegExp(regexpCandidate)),
+  [['string', 'regexp', 'array'], 'string'],
+]
 
 export const prepareExpressions = (
   prepareRegExp: PrepareRegExpInterface
-): ExpressionInterpreterList => ({
+): InterpreterSpecList => ({
   $stringMatch: _stringMatch(prepareRegExp),
   $stringTest: _stringTest(prepareRegExp),
   $stringReplace: _stringReplace(prepareRegExp),
